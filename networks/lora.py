@@ -959,6 +959,8 @@ class LoRANetwork(torch.nn.Module):
             )
             loras = []
             skipped = []
+            blocklist = []
+            paramlist = []
             for name, module in root_module.named_modules():
                 if module.__class__.__name__ in target_replace_modules:
                     for child_name, child_module in module.named_modules():
@@ -1013,6 +1015,17 @@ class LoRANetwork(torch.nn.Module):
                                 module_dropout=module_dropout,
                             )
                             loras.append(lora)
+                            if block_idx is not None :
+                                blocklist.append(block_idx)
+            for lora in loras:
+                down_params = lora.lora_down.weight.numel()
+                up_params = lora.lora_up.weight.numel()
+                total += down_params + up_params
+                paramlist.append(total)
+            print(paramlist)
+            print(loras)
+            print(blocklist)
+            
             return loras, skipped
 
         text_encoders = text_encoder if type(text_encoder) == list else [text_encoder]
